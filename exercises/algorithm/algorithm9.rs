@@ -72,6 +72,18 @@ where
             }
         }
     }
+
+    fn heapify_down(&mut self, mut idx: usize) {
+        while self.children_present(idx) {
+            let smallest_child_idx = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[smallest_child_idx], &self.items[idx]) {
+                self.items.swap(idx, smallest_child_idx);
+                idx = smallest_child_idx;
+            } else {
+                break;
+            }
+        }
+    }
 }
 
 impl<T> Heap<T>
@@ -109,23 +121,6 @@ where
     }
 }
 
-impl<T> Heap<T>
-where
-    T: Default,
-{
-    fn heapify_down(&mut self, mut idx: usize) {
-        while self.children_present(idx) {
-            let smallest_child_idx = self.smallest_child_idx(idx);
-            if (self.comparator)(&self.items[smallest_child_idx], &self.items[idx]) {
-                self.items.swap(idx, smallest_child_idx);
-                idx = smallest_child_idx;
-            } else {
-                break;
-            }
-        }
-    }
-}
-
 pub struct MinHeap;
 
 impl MinHeap {
@@ -134,7 +129,7 @@ impl MinHeap {
     where
         T: Default + Ord,
     {
-        Heap::new(|a, b| a < b)
+        Heap::new_min()
     }
 }
 
@@ -146,7 +141,7 @@ impl MaxHeap {
     where
         T: Default + Ord,
     {
-        Heap::new(|a, b| a > b)
+        Heap::new_max()
     }
 }
 

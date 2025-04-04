@@ -33,17 +33,14 @@ impl Graph for UndirectedGraph {
         let from = String::from(from);
         let to = String::from(to);
 
-      
         self.add_node(&from);
         self.add_node(&to);
 
-        
         self.adjacency_table_mutable()
             .entry(from.clone())
             .or_insert_with(Vec::new)
             .push((to.clone(), weight));
 
-    
         self.adjacency_table_mutable()
             .entry(to)
             .or_insert_with(Vec::new)
@@ -57,7 +54,12 @@ pub trait Graph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
         let node = String::from(node);
-        self.adjacency_table_mutable().entry(node).or_insert_with(Vec::new).is_empty()
+        if self.adjacency_table_mutable().contains_key(&node) {
+            false
+        } else {
+            self.adjacency_table_mutable().insert(node, Vec::new());
+            true
+        }
     }
 
     fn add_edge(&mut self, edge: (&str, &str, i32));
@@ -85,7 +87,7 @@ pub trait Graph {
 mod test_undirected_graph {
     use super::Graph;
     use super::UndirectedGraph;
-
+    use crate::HashSet;
     #[test]
     fn test_add_edge() {
         let mut graph = UndirectedGraph::new();
@@ -133,5 +135,25 @@ mod test_undirected_graph {
         assert!(edges.contains(&(&String::from("b"), &String::from("a"), 5)), "Edge ('b', 'a', 5) should be in the graph");
         assert!(edges.contains(&(&String::from("b"), &String::from("c"), 10)), "Edge ('b', 'c', 10) should be in the graph");
         assert!(edges.contains(&(&String::from("c"), &String::from("b"), 10)), "Edge ('c', 'b', 10) should be in the graph");
+    }
+
+    #[test]
+    fn test_neighbours() {
+        let mut graph = UndirectedGraph::new();
+        graph.add_edge(("a", "b", 5));
+        graph.add_edge(("a", "c", 7));
+        graph.add_edge(("b", "c", 10));
+
+        let a_neighbours: Vec<_> = graph.adjacency_table().get(&String::from("a")).unwrap().iter()
+            .map(|(n, w)| (n.clone(), *w))
+            .collect();
+        assert!(a_neighbours.contains(&(String::from("b"), 5)));
+        assert!(a_neighbours.contains(&(String::from("c"), 7)));
+
+        let b_neighbours: Vec<_> = graph.adjacency_table().get(&String::from("b")).unwrap().iter()
+            .map(|(n, w)| (n.clone(), *w))
+            .collect();
+        assert!(b_neighbours.contains(&(String::from("a"), 5)));
+        assert!(b_neighbours.contains(&(String::from("c"), 10)));
     }
 }
